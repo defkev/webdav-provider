@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "c8481ab6705693f178069e2a0d1a5353",
+    "identityHash": "b1eb451494a5e476054e5afd3710307a",
     "entities": [
       {
         "tableName": "account",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT, `url` TEXT, `protocol` TEXT NOT NULL DEFAULT 'AUTO', `verify_certs` INTEGER NOT NULL, `username` TEXT, `password` TEXT, `max_cache_file_size` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT, `url` TEXT, `protocol` TEXT NOT NULL DEFAULT 'AUTO', `verify_certs` INTEGER NOT NULL, `username` TEXT, `password` TEXT, `client_certificate` TEXT, `max_cache_file_size` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -48,6 +48,12 @@
           {
             "fieldPath": "password",
             "columnName": "password",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "clientCertificate",
+            "columnName": "client_certificate",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -149,7 +155,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c8481ab6705693f178069e2a0d1a5353')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b1eb451494a5e476054e5afd3710307a')"
     ]
   }
 }

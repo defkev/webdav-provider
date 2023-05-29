@@ -1,12 +1,15 @@
 package me.alexbakker.webdav.data
 
+import android.content.Context
 import android.net.Uri
 import android.provider.DocumentsContract
+import android.security.KeyChain
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import me.alexbakker.webdav.BuildConfig
+import me.alexbakker.webdav.WebDavApplication
 import me.alexbakker.webdav.provider.WebDavClient
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -36,12 +39,20 @@ data class Account(
     @ColumnInfo(name = "password")
     var password: String? = null,
 
+    @ColumnInfo(name = "client_certificate")
+    var clientCertificate: String? = null,
+
     @ColumnInfo(name = "max_cache_file_size")
     var maxCacheFileSize: Long = 20
 ) {
     private val authentication: Boolean
         get() {
             return username != null && password != null
+        }
+
+    private val mutual_authentication: Boolean
+        get() {
+            return !clientCertificate.isNullOrBlank()
         }
 
     val rootPath: Path
@@ -72,7 +83,22 @@ data class Account(
         get() {
             if (_client == null) {
                 val creds = if (authentication) Pair(username!!, password!!) else null
-                _client = WebDavClient(baseUrl, creds, noHttp2 = protocol != Protocol.AUTO)
+                val mutualCreds = if (mutual_authentication) {
+                    val context: Context = WebDavApplication.applicationContext()
+                    try {
+                        Triple(
+                            clientCertificate!!,
+                            KeyChain.getPrivateKey(context, clientCertificate!!)!!,
+                            KeyChain.getCertificateChain(context, clientCertificate!!)!!
+                        )
+                    } catch (e: NullPointerException) {
+                        // TODO: maybe add some UI element in case the user removes the key from the KeyStore without updating the account?
+                        null
+                    }
+                } else {
+                    null
+                }
+                _client = WebDavClient(baseUrl, creds, mutualCreds, verifyCerts, noHttp2 = protocol != Protocol.AUTO)
             }
 
             return _client!!
